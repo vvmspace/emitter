@@ -24,13 +24,28 @@ export interface IStateWrapper {
   state: IState;
   get: () => Promise<IState>;
   set: (state: IState) => Promise<IState>;
+  setPrefix: (prefix: string) => void;
 }
 
 export class StateWrapper implements IStateWrapper {
   public state: IState;
   private redisCli: any;
-  private readonly _prefix: string;
+  public _prefix: string;
   private readonly cb?: (state: IState) => void;
+
+  constructor(
+    prefix = '',
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    cb = (state?: IState): void => {
+      return;
+    },
+  ) {
+    this.state = DEFAULT_STATE;
+    this.cb = cb;
+    this.redisCli = new redis.createClient(6379, 'localhost');
+    this.get().then((state: IState) => cb(state));
+    this._prefix = prefix;
+  }
 
   public get(): Promise<IState>;
   async get() {
@@ -39,11 +54,13 @@ export class StateWrapper implements IStateWrapper {
         if (err) {
           return reject(err);
         }
+        console.log({ reply });
         const _state = (reply && JSON.parse(reply)) || DEFAULT_STATE;
-        if (this.state?.lastAction > _state.lastAction) {
-          await this.set(this.state).catch(() => null);
+        if (this.state?.lastAction < _state.lastAction) {
+          await this.set(_state).catch(() => null);
         }
         this.state && this.cb(this.state);
+        console.log('this.state: ', this.state);
         return resolve(this.state);
       });
     });
@@ -51,10 +68,18 @@ export class StateWrapper implements IStateWrapper {
 
   public set(state: IState): Promise<IState>;
   async set(state) {
-    if (state.lastAction < this.state.lastAction) {
+    console.log('state set');
+    if (
+      state.lastAction &&
+      this.state &&
+      this.state.lastAction &&
+      state.lastAction > this.state.lastAction
+    ) {
+      console.log('state: ', state);
+      console.log('this.state: ', this.state);
       return this.state;
     }
-    // console.log('StateWrapper SET', state);
+    console.log('StateWrapper SET', state);
     return new Promise((resolve, reject) => {
       // console.log(this.redisCli.connected);
       this.redisCli.set(
@@ -74,16 +99,7 @@ export class StateWrapper implements IStateWrapper {
     });
   }
 
-  constructor(
-    prefix = '',
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    cb = (state?: IState): void => {
-      return;
-    },
-  ) {
-    this.cb = cb;
-    this.redisCli = new redis.createClient(6379, 'localhost');
-    this.get().then((state: IState) => cb(state));
-    this._prefix = prefix;
+  setPrefix(from: string) {
+    this._prefix = from;
   }
 }

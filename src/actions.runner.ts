@@ -11,6 +11,7 @@ export const runner = async (
   run: any,
   payload: any,
   state: any,
+  from: string,
 ): Promise<any> => {
   state = state || DEFAULT_STATE;
   state.lastAction =
@@ -28,6 +29,8 @@ export const runner = async (
     payload.lastId = state.lastId;
     state.lastId = payload.id;
     state = run(payload, state);
+    stateWrapper.setPrefix(from);
+    console.log('stateWrapper._prefix: ', stateWrapper._prefix);
     await stateWrapper.set(state);
   }
   return state;
