@@ -5,7 +5,7 @@ export const pingAction: IPingAction = {
   action: 'ping',
   run: (ping, state): any => {
     const { from } = ping;
-    console.log('pingAction:', { ping, state });
+    // console.log('pingAction: ping, state', ping, state);
     let connects = state?.connects || [];
     connects = connects.filter((connect) => typeof connect !== 'undefined');
     if (!connects.find((con) => con?.from == from)) {

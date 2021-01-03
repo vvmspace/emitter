@@ -25,6 +25,7 @@ export class AppService {
     FROM = genFrom();
     this.state = {};
     this.stateWrapper = new StateWrapper(FROM, async (state: IState) => {
+      // if(!)
       if (!state) {
         return this.report('NO STATE');
       }
@@ -69,13 +70,19 @@ export class AppService {
 
             await this.stateWrapper.get();
 
+            console.log('isStorable(topic): ', isStorable(topic));
             isStorable(topic) &&
               (await this.stateWrapper.get().then(async (state) => {
-                state.pending.push(payload);
-                await this.stateWrapper.set(state);
+                console.log('STORABLE state: ', state);
+                if (state) {
+                  state.pending.push(payload);
+                  await this.stateWrapper.set(state);
+                }
               }));
 
-            this.state = await runner(run, payload, this.state);
+            this.state = await runner(run, payload, this.state, FROM);
+            console.log('this.state 2: ', this.state);
+            console.log('FROM: ', FROM);
             if (!myTransaction && isApprovable(topic)) {
               const approvePayload = {
                 id: this.getId(),
@@ -99,14 +106,15 @@ export class AppService {
 
     setInterval(() => {
       setTimeout(async () => {
-        FROM = genFrom();
+        FROM = 'popstas_' + genFrom();
+        this.stateWrapper.setPrefix(FROM);
         await this.stateWrapper.get();
-        await this.publish('ping', {
-          id: this.getId(),
-          from: FROM,
-          action: 'ping',
-          time: nano(),
-        }).catch((e) => this.report(e.message || '500'));
+        // await this.publish('ping', {
+        //   id: this.getId(),
+        //   from: FROM,
+        //   action: 'ping',
+        //   time: nano(),
+        // }).catch((e) => this.report(e.message || '500'));
       }, Math.floor(Math.random() * 2000));
     }, 30000);
   }
