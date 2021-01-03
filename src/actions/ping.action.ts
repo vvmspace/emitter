@@ -6,13 +6,21 @@ export const pingAction: IPingAction = {
   run: (ping, state): any => {
     const { from } = ping;
     console.log(ping, state);
-    const connects = state?.connects || [];
-    if (!connects.find((con) => con.from == from)) {
+    let connects = state?.connects || [];
+    connects = connects.filter((connect) => typeof connect !== 'undefined');
+    if (!connects.find((con) => con?.from == from)) {
+      console.log('PING: first ping from ' + from);
       connects.push({ from, lastConnect: nano() });
-      state.connects = connects;
     } else {
-      console.log('PING WENT WRONG');
+      connects = connects.map((connect) => {
+        if (connect.from == from) {
+          connect.lastConnect = nano();
+        }
+        return connect;
+      });
+      console.log(`PING: lastConnect update`);
     }
+    state.connects = connects;
     return state;
   },
 };

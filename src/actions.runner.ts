@@ -13,7 +13,8 @@ export const runner = async (
   state: any,
 ): Promise<any> => {
   state = state || DEFAULT_STATE;
-  state.lastAction = payload.time || nano();
+  state.lastAction =
+    (payload.time > state.lastAction && payload.time) || nano();
   if (!isStorable(payload.action)) {
     payload.id = `T${nano()}`;
     return run(payload, state);
@@ -28,6 +29,6 @@ export const runner = async (
     state.lastId = payload.id;
     state = run(payload, state);
     await stateWrapper.set(state);
-    return state;
   }
+  return state;
 };

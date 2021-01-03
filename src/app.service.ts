@@ -25,7 +25,13 @@ export class AppService {
     FROM = genFrom();
     this.state = {};
     this.stateWrapper = new StateWrapper(FROM, async (state: IState) => {
-      this.state = state;
+      if (!state) {
+        return this.report('NO STATE');
+      }
+      if (state.lastAction > this.state?.lastAction) {
+        this.state = state;
+        this.publish('state', { state });
+      }
       return this.report('STATE CALLBACK');
     });
 

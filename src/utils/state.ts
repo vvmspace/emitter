@@ -43,7 +43,7 @@ export class StateWrapper implements IStateWrapper {
         if (this.state?.lastAction > _state.lastAction) {
           await this.set(this.state).catch(() => null);
         }
-        this.cb(this.state);
+        this.state && this.cb(this.state);
         return resolve(this.state);
       });
     });
@@ -69,7 +69,7 @@ export class StateWrapper implements IStateWrapper {
       );
     }).then(() => {
       this.state = state;
-      this.cb(this.state);
+      this.state && this.cb(this.state);
       return state;
     });
   }
