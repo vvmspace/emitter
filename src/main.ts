@@ -3,11 +3,13 @@ import { AppModule } from './app.module';
 // import * as killPort from 'kill-port';
 
 import * as sh from 'shell-exec';
+import { INestApplication } from '@nestjs/common';
 
 async function bootstrap(k: number | null = null) {
   // await killPort(3000);
-  const app = await NestFactory.create(AppModule);
-  await app
+  const apps: INestApplication[] = [];
+  apps[k] = await NestFactory.create(AppModule);
+  await apps[k]
     .listen((k && 3000 + k) || process.env.HTTP_PORT || 3000)
     .catch(() => null);
 }

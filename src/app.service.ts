@@ -24,7 +24,6 @@ export class AppService {
   constructor() {
     FROM = genFrom();
     this.state = {};
-    console.log('constructor');
     this.stateWrapper = new StateWrapper(FROM, async (state: IState) => {
       if (!state) {
         return this.report('NO STATE');
@@ -64,7 +63,6 @@ export class AppService {
             if (!run) {
               return;
             }
-            // console.log();
             payloadString.toString('utf-8');
             const payload = JSON.parse(payloadString);
             const myTransaction = payload.from == FROM;
@@ -78,7 +76,6 @@ export class AppService {
               }));
 
             this.state = await runner(run, payload, this.state);
-            console.log('after runner')
             if (!myTransaction && isApprovable(topic)) {
               const approvePayload = {
                 id: this.getId(),
@@ -100,11 +97,8 @@ export class AppService {
         .catch((e) => log(e.message));
     }, Math.floor(Math.random() * 1000));
 
-    console.log('before ping');
     setInterval(() => {
-      console.log('interval');
       setTimeout(async () => {
-        console.log('ping');
         FROM = genFrom();
         await this.stateWrapper.get();
         await this.publish('ping', {
@@ -113,9 +107,8 @@ export class AppService {
           action: 'ping',
           time: nano(),
         }).catch((e) => this.report(e.message || '500'));
-        // await this.stateWrapper.set(_state);
       }, Math.floor(Math.random() * 2000));
-    }, 15000);
+    }, 30000);
   }
 
   publish(action: string, payload: any): any {
@@ -146,7 +139,6 @@ export class AppService {
       ...record,
       time: nano(),
     };
-    console.log(payload);
     this.publish(record.action, payload);
     return { action: record.action, payload };
   }
