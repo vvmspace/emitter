@@ -12,7 +12,7 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:dev:network": "kill-port 3000 && kill-port 3001 && kill-port 3002 && WALLET_NAME=1st nest start --watch & HTTP_PORT=3001 WALLET_NAME=2dn nest start --watch & HTTP_PORT=3002 WALLET_NAME=3rd nest start --watch & HTTP_PORT=3003 WALLET_NAME=3rd nest start --watch & HTTP_PORT=3004 WALLET_NAME=3rd nest start --watch & HTTP_PORT=3005 WALLET_NAME=3.rd nest start --watch & HTTP_PORT=3006 WALLET_NAME=3rhgd nest start --watch & HTTP_PORT=3007 WALLET_NAME=3krd nest start --watch & HTTP_PORT=3008 WALLET_NAME=3erd nest start --watch & HTTP_PORT=3009 WALLET_NAME=3rfd nest start --watch & HTTP_PORT=3010 WALLET_NAME=3rd nest start --watch",
-    "start:debug": "nest start --debug --watch",
+    "start:debug": "kp=true nest start --debug --watch",
     "start:prod": "node dist/main",
     "start:redis": "docker rm some-redis && docker run --name some-redis -d redis --expose=6379",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
