@@ -24,6 +24,7 @@ export class AppService {
   constructor() {
     FROM = genFrom();
     this.state = {};
+    console.log('constructor');
     this.stateWrapper = new StateWrapper(FROM, async (state: IState) => {
       if (!state) {
         return this.report('NO STATE');
@@ -36,7 +37,7 @@ export class AppService {
     });
 
     this.mqtt = new Client({
-      url: process.env.MQTT_SERVER || 'mqtt://mqtt.local',
+      url: `mqtt://${process.env.MQTT_HOST || 'mqtt.local'}`,
     });
     this.report = (msg) => {
       return (
@@ -76,7 +77,8 @@ export class AppService {
                 await this.stateWrapper.set(state);
               }));
 
-            this.state = runner(run, payload, this.state);
+            this.state = await runner(run, payload, this.state);
+            console.log('after runner')
             if (!myTransaction && isApprovable(topic)) {
               const approvePayload = {
                 id: this.getId(),
@@ -98,19 +100,22 @@ export class AppService {
         .catch((e) => log(e.message));
     }, Math.floor(Math.random() * 1000));
 
+    console.log('before ping');
     setInterval(() => {
+      console.log('interval');
       setTimeout(async () => {
+        console.log('ping');
         FROM = genFrom();
-        await this.stateWrapper.set(
-          await this.publish('ping', {
-            id: this.getId(),
-            from: FROM,
-            action: 'ping',
-            time: nano(),
-          }).catch((e) => this.report(e.message || '500')),
-        );
+        await this.stateWrapper.get();
+        await this.publish('ping', {
+          id: this.getId(),
+          from: FROM,
+          action: 'ping',
+          time: nano(),
+        }).catch((e) => this.report(e.message || '500'));
+        // await this.stateWrapper.set(_state);
       }, Math.floor(Math.random() * 2000));
-    }, 30000);
+    }, 15000);
   }
 
   publish(action: string, payload: any): any {
@@ -141,7 +146,7 @@ export class AppService {
       ...record,
       time: nano(),
     };
-    // console.log(payload);
+    console.log(payload);
     this.publish(record.action, payload);
     return { action: record.action, payload };
   }
